@@ -4,13 +4,26 @@
 #include <random>
 #include <chrono>
 
+
 #include "color.h"
 #include "vec3.h"
 #include "ray.h"
 
-#define IMAGE_WIDTH_CONST 800
+#define IMAGE_WIDTH_CONST 1920
+
+bool hit_sphere(const point3& center, double radius, const ray& r) {
+    vec3 oc = center - r.origin();
+    auto a = dot(r.direction(), r.direction());
+    auto b = -2.0 * dot(r.direction(), oc);
+    auto c = dot(oc, oc) - radius * radius;
+    auto discriminant = b * b - 4 * a * c;
+    return (discriminant >= 0);
+}
 
 color ray_color(const ray& r) {
+    if (hit_sphere(point3(0, 0, -1), 0.5, r))
+        return color(1, 0, 0);
+
     vec3 unit_direction = unit_vector(r.direction());
     auto a = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
@@ -21,7 +34,7 @@ void GenerateImage(int image_width, int image_height,
                     vec3 pixel_delta_u, vec3 pixel_delta_v,
                     std::vector<float> &pixelValues) {
     // create a color array
-    for (int j = 0; j < image_height; j++) {
+    for (int j = image_height - 1; j >= 0; j--) {
         for (int i = 0; i < image_width; i++) {
             auto pixel_center = pixel00_loc + i * pixel_delta_u + j * pixel_delta_v;
             auto ray_direction = pixel_center - camera_center;
@@ -29,10 +42,10 @@ void GenerateImage(int image_width, int image_height,
             ray r(camera_center, ray_direction);
             auto pixel_color = ray_color(r);
 
-            pixelValues.push_back(pixel_color.x()); // R
-            pixelValues.push_back(pixel_color.y()); // G
-            pixelValues.push_back(pixel_color.z()); // B
-            pixelValues.push_back(1.0f);            //A
+            pixelValues.push_back((float)pixel_color.x()); // R
+            pixelValues.push_back((float)pixel_color.y()); // G
+            pixelValues.push_back((float)pixel_color.z()); // B
+            //pixelValues.push_back(1.0f);            //A
 
         }
     }
@@ -44,7 +57,7 @@ int main(void)
     int renderTime = 0;
 
     auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 800;
+    int image_width = IMAGE_WIDTH_CONST;
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height; // ensure image height is atleast 1
 
@@ -89,8 +102,8 @@ int main(void)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-    GenerateImage(image_height, image_width, pixel00_location, camera_center, pixel_delta_u, pixel_delta_v, pixelValues);
-
+    GenerateImage(image_width, image_height , pixel00_location, camera_center, pixel_delta_u, pixel_delta_v, pixelValues);
+    
     // main game looop
     while (!glfwWindowShouldClose(window))
     {
@@ -102,7 +115,7 @@ int main(void)
         auto start = std::chrono::high_resolution_clock::now(); // start the clock
 
         // draw pixels on the screen from the pixel values array
-        glDrawPixels(image_width, image_height, GL_RGBA, GL_FLOAT, pixelValues.data());
+        glDrawPixels(image_width, image_height, GL_RGB, GL_FLOAT, pixelValues.data());
         auto end = std::chrono::high_resolution_clock::now(); // end the clock
         renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); // calculate the time taken
 
