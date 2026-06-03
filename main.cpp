@@ -6,13 +6,70 @@
 
 #include "color.h"
 #include "vec3.h"
+#include "ray.h"
+
+#define IMAGE_WIDTH_CONST 800
+
+color ray_color(const ray& r) {
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+}
+
+void GenerateImage(int image_width, int image_height,
+                    vec3 pixel00_loc, vec3 camera_center,
+                    vec3 pixel_delta_u, vec3 pixel_delta_v,
+                    std::vector<float> &pixelValues) {
+    // create a color array
+    for (int j = 0; j < image_height; j++) {
+        for (int i = 0; i < image_width; i++) {
+            auto pixel_center = pixel00_loc + i * pixel_delta_u + j * pixel_delta_v;
+            auto ray_direction = pixel_center - camera_center;
+
+            ray r(camera_center, ray_direction);
+            auto pixel_color = ray_color(r);
+
+            pixelValues.push_back(pixel_color.x()); // R
+            pixelValues.push_back(pixel_color.y()); // G
+            pixelValues.push_back(pixel_color.z()); // B
+            pixelValues.push_back(1.0f);            //A
+
+        }
+    }
+}
 
 int main(void)
 {
     GLFWwindow* window;
     int renderTime = 0;
+
+    auto aspect_ratio = 16.0 / 9.0;
     int image_width = 800;
-    int image_height = 800;
+    int image_height = int(image_width / aspect_ratio);
+    image_height = (image_height < 1) ? 1 : image_height; // ensure image height is atleast 1
+
+    auto viewport_height = 2.0;
+    auto viewport_width = viewport_height * (double(image_width) / image_height);
+
+    // horizontal and vertical vectors for the viewport
+    auto viewport_u = vec3(viewport_width, 0, 0);
+    auto viewport_v = vec3(0, -viewport_height, 0);
+
+    // calculate the delta vectors for each pixel. these are equal to the length of 1 pixel
+    // These help in moving to the next pixel. 
+    auto pixel_delta_u = viewport_u / (image_width);
+    auto pixel_delta_v = viewport_v / (image_height);
+
+    // camera 
+    auto camera_center = point3(0, 0, 0);
+    auto focal_length = 1.0;
+
+    // position of the upper left corner of the viewport
+    auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+    auto pixel00_location = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+
+
     std::vector<float> pixelValues;
 
     /* Initialize the library */
@@ -29,36 +86,25 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
+    GenerateImage(image_height, image_width, pixel00_location, camera_center, pixel_delta_u, pixel_delta_v, pixelValues);
 
-    // create a color array
-    for (int j = 0; j < image_height; j++) {
-        for (int i = 0; i < image_width; i++) {
-            auto pixel_color = color(double(i) / (image_width - 1), double(j) / (image_height - 1), 0);
-
-            pixelValues.push_back(pixel_color.x()); // R
-            pixelValues.push_back(pixel_color.y()); // G
-            pixelValues.push_back(pixel_color.z()); // B
-            pixelValues.push_back(1.0f);            //A
-            
-        }
-    }
-
-    
-
-    /* Loop until the user closes the window */
+    // main game looop
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        auto start = std::chrono::high_resolution_clock::now();
+        // to Calculate the render time
+        
+        auto start = std::chrono::high_resolution_clock::now(); // start the clock
+
+        // draw pixels on the screen from the pixel values array
         glDrawPixels(image_width, image_height, GL_RGBA, GL_FLOAT, pixelValues.data());
-        auto end = std::chrono::high_resolution_clock::now();
-        renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        auto end = std::chrono::high_resolution_clock::now(); // end the clock
+        renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); // calculate the time taken
 
 
         /* Swap front and back buffers */
@@ -67,7 +113,7 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
-    std::cout << renderTime <<"ms";
+    std::cout << renderTime <<"ms"; // render time will be printed after the window is closed for now. !NEED TO SHOW ON THE SCREEN!
 
     glfwTerminate();
     return 0;
