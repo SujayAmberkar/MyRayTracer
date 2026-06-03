@@ -29,7 +29,7 @@ public:
     // Returns true if ray hits within [ray_tmin, ray_tmax], filling rec with intersection data.
     // Why: the t-range clamp prevents self-intersections (ray_tmin > 0) and lets the caller
     // limit hits to a region of interest, e.g. shadow rays stopping at the light.
-    virtual bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const = 0;
+    virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
 };
 
 #endif

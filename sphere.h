@@ -10,7 +10,7 @@ public:
     // fmax clamps negative radii to 0, preventing an inside-out sphere from silently corrupting normals.
     sphere(const point3& center, const double radius) : center(center), radius(std::fmax(0, radius)) {}
 
-    bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
         vec3 oc = center - r.origin();
 
         // Coefficients of the quadratic (ray-sphere intersection equation).
@@ -31,9 +31,9 @@ public:
         // Why: we always want the closest valid hit, and a single sphere can produce two intersections
         // (entry and exit), so we must check both before giving up.
         auto root = (h - sqrtd) / a;
-        if (root <= ray_tmin || ray_tmax <= root) {
+        if (!ray_t.surrounds(root)) {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin || ray_tmax <= root)
+            if (!ray_t.surrounds(root))
                 return false;
         }
 
