@@ -4,12 +4,15 @@
 #include <random>
 #include <chrono>
 
+#include "color.h"
+#include "vec3.h"
+
 int main(void)
 {
     GLFWwindow* window;
     int renderTime = 0;
-    int width = 640;
-    int height = 480;
+    int image_width = 800;
+    int image_height = 800;
     std::vector<float> pixelValues;
 
     /* Initialize the library */
@@ -17,7 +20,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(width, height, "My RayTracer", NULL, NULL);
+    window = glfwCreateWindow(image_width, image_height, "My RayTracer", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -32,8 +35,16 @@ int main(void)
 
 
     // create a color array
-    for (int i = 0; i < width * height * 4; i++) {
-        pixelValues.push_back(dist(rng));
+    for (int j = 0; j < image_height; j++) {
+        for (int i = 0; i < image_width; i++) {
+            auto pixel_color = color(double(i) / (image_width - 1), double(j) / (image_height - 1), 0);
+
+            pixelValues.push_back(pixel_color.x()); // R
+            pixelValues.push_back(pixel_color.y()); // G
+            pixelValues.push_back(pixel_color.z()); // B
+            pixelValues.push_back(1.0f);            //A
+            
+        }
     }
 
     
@@ -45,7 +56,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         auto start = std::chrono::high_resolution_clock::now();
-        glDrawPixels(width, height, GL_RGBA, GL_FLOAT, pixelValues.data());
+        glDrawPixels(image_width, image_height, GL_RGBA, GL_FLOAT, pixelValues.data());
         auto end = std::chrono::high_resolution_clock::now();
         renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
