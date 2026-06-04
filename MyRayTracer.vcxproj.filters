@@ -47,5 +47,8 @@
     <ClInclude Include="header\vec3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="header\material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,11 +4,14 @@
 #define HITTABLE_H
 #include "common.h"
 
+class material;
+
 // Stores intersection data: hit point, surface normal, ray parameter t, and face orientation.
 class hit_record {
 public:
     point3 p;       // world-space hit point
     vec3 normal;    // always points against the incident ray
+    shared_ptr<material> mat;
     double t;       // ray parameter at intersection
     bool front_face; // true if ray hit the outside of the surface
 
