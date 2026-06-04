@@ -1,14 +1,14 @@
 
 #include <GLFW/glfw3.h>
 #include "vector"
-#include "common.h"
+#include "../header/common.h"
 
 #include <chrono>
 
-#include "camera.h"
-#include "hittable.h"
-#include "hittable_list.h"
-#include "sphere.h"
+#include "../header/camera.h"
+#include "../header/hittable.h"
+#include "../header/hittable_list.h"
+#include "../header/sphere.h"
 
 
 #define IMAGE_WIDTH_CONST 800
