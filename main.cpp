@@ -28,7 +28,7 @@ int main(void)
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = IMAGE_WIDTH_CONST;
-    cam.samples_per_pixel = 1;
+    cam.samples_per_pixel = 20;
 
     cam.render(world, pixelValues);
 
