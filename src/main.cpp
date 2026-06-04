@@ -29,8 +29,13 @@ int main(void)
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = IMAGE_WIDTH_CONST;
     cam.samples_per_pixel = 20;
+    cam.max_depth = 10;
 
+    // to Calculate the render time
+    auto start = std::chrono::high_resolution_clock::now(); // start the clock
     cam.render(world, pixelValues);
+    auto end = std::chrono::high_resolution_clock::now(); // end the clock
+    renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); // calculate the time taken
 
 
     /* Initialize the library */
@@ -59,15 +64,8 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // to Calculate the render time
-        
-        auto start = std::chrono::high_resolution_clock::now(); // start the clock
-
         // draw pixels on the screen from the pixel values array
         glDrawPixels(image_width, image_height, GL_RGB, GL_FLOAT, pixelValues.data());
-        auto end = std::chrono::high_resolution_clock::now(); // end the clock
-        renderTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count(); // calculate the time taken
-
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

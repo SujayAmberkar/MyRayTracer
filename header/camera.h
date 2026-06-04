@@ -9,6 +9,7 @@ public:
 	double aspect_ratio = 16.0 / 9.0;
 	int image_width = 100;
 	int samples_per_pixel = 10;	// count random samples for each pixel
+	int max_depth = 10;
 	
 
 	void render(const hittable& world, std::vector<float>& pixelValues) {
@@ -20,7 +21,7 @@ public:
 				color pixel_color(0, 0, 0);
 				for (int sample = 0; sample < samples_per_pixel; sample++) {
 					ray r = get_ray(i, j);
-					pixel_color += ray_color(r, world);
+					pixel_color += ray_color(r, max_depth, world);
 				}
 				pixelValues.push_back((float)pixel_color.x() * pixel_samples_scale); // R
 				pixelValues.push_back((float)pixel_color.y() * pixel_samples_scale); // G
@@ -79,11 +80,13 @@ private:
 		return vec3(random_double() - 0.5, random_double() - 0.5, 0);
 	}
 
-	color ray_color(const ray& r, const hittable& world) {
+	color ray_color(const ray& r,int depth, const hittable& world) {
+		if (depth <= 0)
+			return color(0, 0, 0);
 		hit_record rec;
-		if (world.hit(r, interval(0, infinity), rec)) {
-			vec3 direction = random_on_hemisphere(rec.normal);
-			return 0.5 * ray_color(ray(rec.p,direction), world);
+		if (world.hit(r, interval(0.001, infinity), rec)) {
+			vec3 direction = rec.normal + random_unit_vector();
+			return 0.5 * ray_color(ray(rec.p,direction), depth - 1, world);
 		}
 
 		vec3 unit_direction = unit_vector(r.direction());
