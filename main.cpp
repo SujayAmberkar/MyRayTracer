@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "vector"
 #include "common.h"
-#include <random>
+
 #include <chrono>
 
 #include "camera.h"
@@ -28,6 +28,8 @@ int main(void)
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = IMAGE_WIDTH_CONST;
+    cam.samples_per_pixel = 1;
+
     cam.render(world, pixelValues);
 
 
