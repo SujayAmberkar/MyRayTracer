@@ -82,8 +82,11 @@ private:
 	}
 
 	color ray_color(const ray& r,int depth, const hittable& world) {
+		// if the ray has bounced enough then stop
 		if (depth <= 0)
 			return color(0, 0, 0);
+
+		// record intersection data
 		hit_record rec;
 		if (world.hit(r, interval(0.001, infinity), rec)) {
 			ray scattered;
