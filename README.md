@@ -10,7 +10,8 @@ book to get a skeleton ray tracer, while also changing(or trying to) some parts
 of the implementation. 
 
 ## Current Render
-![Rendered Image]("render.png")
+<img width="800" height="450" alt="render" src="https://github.com/user-attachments/assets/657a8979-34db-4ee8-a14a-f17dea0fde9f" />
+
 
 ## Implemented Features
 
