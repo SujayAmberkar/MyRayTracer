@@ -1,10 +1,8 @@
 # Ray Tracer
 
-
-
 ## Overview
 
-A CPU based C++ Ray Tracer built to learn Ray and Path Tracing concepts. 
+A C++ CPU Ray Tracer to learn Ray and Path Tracing concepts. 
 Started as semester project for Advanced Computer graphics, I plan to
 keep working on this project to learn and implement even more advanced
 techniques, and extend it to a path tracer. Currently, I'm following the [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
@@ -32,9 +30,6 @@ of the implementation.
  cd MyRayTracer
 ```
 Open MyRayTracer.sln in Visual Studio 2022.
-
-
-
 
 ## Benchmark
 
