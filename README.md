@@ -19,6 +19,7 @@ of the implementation.
 - Whitted style Ray Tracing.
 - Render final image in a GLFW window.
 - ImGUI UI that shows render time, editable samples per pixel & ray depth, and re-render button.
+- Anti-aliasing
 - Implemented Materials:
     - Diffuse Surface
     - Metal (smooth & matte)
@@ -37,10 +38,11 @@ Open MyRayTracer.sln in Visual Studio 2022.
 
 ## Benchmark
 
-| Settings          | Value    |
-| ----------------- | -------- |
-| Ray Depth         | 20       |
-| Samples per pixel | 50       |
-| Render Time       | 63186 ms |
+| Settings          | Value     |
+| ----------------- | --------- |
+| Max Ray Depth     | 20        |
+| Samples per pixel | 50        |
+| Render Time       | 63186 ms  |
+| Resolution        | 800 x 450 |
 
 
