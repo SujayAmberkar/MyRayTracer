@@ -11,6 +11,11 @@ public:
 	int image_width = 100;
 	int samples_per_pixel = 10;	// count random samples for each pixel
 	int max_depth = 10;
+
+	double vfov = 90; // vertical field of view
+	point3 lookfrom = point3(0, 0, 0);
+	point3 lookat = point3(0, 0, -1);
+	vec3 vup = vec3(0, 1, 0);
 	
 
 	void render(const hittable& world, std::vector<float>& pixelValues) {
@@ -38,6 +43,8 @@ private:
 	vec3 pixel_delta_u;
 	vec3 pixel_delta_v;
 	double pixel_samples_scale;
+	vec3 u, v, w;
+
 
 	void initialize() {
 		image_height = int(image_width / aspect_ratio);
@@ -45,16 +52,23 @@ private:
 		pixel_samples_scale = 1.0 / samples_per_pixel;
 
 		// camera 
-		camera_center = point3(0, 0, 0);
+		camera_center = lookfrom;
 
 		// Determine viewport dimensions.
-		auto focal_length = 1.0;
-		auto viewport_height = 2.0;
+		auto focal_length = (lookfrom - lookat).length();
+		auto theta = degrees_to_radians(vfov);
+		auto h = std::tan(theta / 2);
+		auto viewport_height = 2.0 * h * focal_length;
 		auto viewport_width = viewport_height * (double(image_width) / image_height);
 
+		// Calculate the u,v,w unit basis vectors for the camera coordinate frame
+		w = unit_vector(lookfrom - lookat);
+		u = unit_vector(cross(vup, w));
+		v = cross(w, u);
+
 		// horizontal and vertical vectors for the viewport
-		auto viewport_u = vec3(viewport_width, 0, 0);
-		auto viewport_v = vec3(0, -viewport_height, 0);
+		auto viewport_u = viewport_width * u;
+		auto viewport_v = viewport_height * -v;
 
 		// calculate the delta vectors for each pixel. these are equal to the length of 1 pixel
 		// These help in moving to the next pixel. 
@@ -62,7 +76,7 @@ private:
 		pixel_delta_v = viewport_v / (image_height);
 
 		// position of the upper left corner of the viewport
-		auto viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+		auto viewport_upper_left = camera_center - focal_length * w - viewport_u / 2.0 - viewport_v / 2.0;
 		pixel00_location = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 	}
 

@@ -28,6 +28,45 @@ void SaveRender(std::vector<float> pixelValues, int image_width, int image_heigh
     stbi_write_png("render.png", image_width, image_height, 3, pngPixels.data(), image_width * 3);
 }
 
+hittable_list SampleScene(hittable_list world) {
+    auto material_ground = make_shared<lambertian>(color(0.74, 0.76, 0.78));
+
+
+    auto material_center = make_shared<lambertian>(color(0.9, 0.29, 0.235));
+    
+    // glass
+    auto outer_glass_mat = make_shared<dielectric>(1.50);
+    auto inner_glass_mat = make_shared<dielectric>(1.00 / 1.50);
+    
+    // smooth metal
+    auto smooth_metal_mat = make_shared<metal>(color(0.8, 0.6, 0.2), 0.01);
+
+    // fuzzy metal
+    auto fuzzy_metal_mat = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
+
+    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<sphere>(point3(0.0, 0.2, -2.2), 0.7, material_center));
+
+    //hollow glass
+    world.add(make_shared<sphere>(point3(-0.8, 0.0, -1.0), 0.5, outer_glass_mat));
+    world.add(make_shared<sphere>(point3(-0.8, 0.0, -1.0), 0.4, inner_glass_mat));
+
+    world.add(make_shared<sphere>(point3(1.5, 0.2, -1.0), 0.7, smooth_metal_mat));
+    world.add(make_shared<sphere>(point3(0.0, -0.2, 0.0), 0.3, fuzzy_metal_mat));
+    return world;
+}
+
+hittable_list SampleScene2(hittable_list world) {
+    auto R = std::cos(pi / 4);
+
+    auto material_left = make_shared<lambertian>(color(0, 0, 1));
+    auto material_right = make_shared<lambertian>(color(1, 0, 0));
+
+    world.add(make_shared<sphere>(point3(-R, 0, -1), R, material_left));
+    world.add(make_shared<sphere>(point3(R, 0, -1), R, material_right));
+    return world;
+}
+
 int main(void)
 {
     GLFWwindow* window;
@@ -36,25 +75,19 @@ int main(void)
 
     // add objects to the scene(world)
     hittable_list world;
-    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left = make_shared<dielectric>(1.50);
-    auto material_bubble = make_shared<dielectric>(1.00 / 1.50);
-    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
-
-    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point3(0.0, 0.0, -1.2), 0.5, material_center));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
+    world = SampleScene(world);
 
 
     // Camera setup
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = IMAGE_WIDTH_CONST;
-    cam.samples_per_pixel = 5;
-    cam.max_depth = 2;
+    cam.samples_per_pixel = 50;
+    cam.max_depth = 20;
+    cam.vfov = 30;
+    cam.lookfrom = point3(-1, 1, 3);
+    cam.lookat = point3(0, 0, -1);
+    cam.vup = vec3(0, 1, 0);
 
     // to Calculate the render time
     auto start = std::chrono::high_resolution_clock::now(); // start the clock
