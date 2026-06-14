@@ -19,6 +19,14 @@
 
 #define IMAGE_WIDTH_CONST 800
 
+void SaveRender(std::vector<float> pixelValues, int image_width, int image_height) {
+    std::vector<unsigned char> pngPixels(pixelValues.size());
+    for (int i = 0; i < pixelValues.size(); i++) {
+        pngPixels[i] = (unsigned char)(pixelValues[i] * 255.99f);
+    }
+    stbi_flip_vertically_on_write(1);
+    stbi_write_png("render.png", image_width, image_height, 3, pngPixels.data(), image_width * 3);
+}
 
 int main(void)
 {
@@ -38,13 +46,15 @@ int main(void)
     world.add(make_shared<sphere>(point3(0.0, 0.0, -1.2), 0.5, material_center));
     world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
     world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));;
+    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
 
+
+    // Camera setup
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = IMAGE_WIDTH_CONST;
-    cam.samples_per_pixel = 50;
-    cam.max_depth = 20;
+    cam.samples_per_pixel = 5;
+    cam.max_depth = 2;
 
     // to Calculate the render time
     auto start = std::chrono::high_resolution_clock::now(); // start the clock
@@ -61,12 +71,7 @@ int main(void)
     int image_width = IMAGE_WIDTH_CONST;
     int image_height = int(IMAGE_WIDTH_CONST / cam.aspect_ratio);
     
-    std::vector<unsigned char> pngPixels(pixelValues.size());
-    for (int i = 0; i < pixelValues.size(); i++) {
-        pngPixels[i] = (unsigned char)(pixelValues[i] * 255.99f);
-    }
-    stbi_flip_vertically_on_write(1);
-    stbi_write_png("render.png", image_width, image_height, 3, pngPixels.data(), image_width * 3);
+    
 
     window = glfwCreateWindow(image_width, image_height, "My RayTracer", NULL, NULL);
     if (!window)
@@ -80,7 +85,7 @@ int main(void)
     std::mt19937 rng(42);
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-    // create IMGUI window
+    // Setup ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -110,6 +115,9 @@ int main(void)
         if (ImGui::Button("Render")) {
             pixelValues.clear();
             cam.render(world, pixelValues);
+        }
+        if (ImGui::Button("Save Render")) {
+            SaveRender(pixelValues, image_width, image_height);
         }
         ImGui::End();
 
